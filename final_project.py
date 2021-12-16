@@ -275,6 +275,7 @@ tree_full = DecisionTreeClassifier(criterion="entropy", max_depth=3)
 tree_full = tree_full.fit(X, Y)
 
 X_visualize = []; Y_visualize = []
+time_0 = 0; time_1 = 0; time_2 = 0; time_3 = 0
 
 for i,window_with_timestamp_and_label in slidingWindow(visualize_data, window_size, step_size):
     window_visualize = window_with_timestamp_and_label[:,1:-1]
@@ -288,6 +289,17 @@ count_1 = np.count_nonzero(pred_vals_final == 1)
 count_2 = np.count_nonzero(pred_vals_final == 2)
 count_3 = np.count_nonzero(pred_vals_final == 3)
 
+#Added here
+for i in range(len(pred_vals_final)-1):
+    if pred_vals_final[i] == 0:
+        time_0 += X_visualize[i+1][0] - X_visualize[i][0]
+    elif pred_vals_final[i] == 1:
+        time_1 += X_visualize[i][1] - X_visualize[i+1][1]
+    elif pred_vals_final[i] == 2:
+        time_2 += X_visualize[i+1][2] - X_visualize[i][2]
+    elif pred_vals_final[i] == 3:
+        time_3 += X_visualize[i+1][3] - X_visualize[i][3]
+
 labels = ['Walking', 'Running', 'Sitting', 'Standing']
 sizes = [count_0, count_1, count_2, count_3]
 explode = (0, 0, 0.1, 0)  # only "explode" the 2nd slice (i.e. 'Hogs')
@@ -297,6 +309,12 @@ ax1.pie(sizes, explode=explode, labels=labels, autopct='%1.1f%%',
         shadow=True, startangle=90)
 ax1.axis('equal')  # Equal aspect ratio ensures that pie is drawn as a circle.
 
+plt.show()
+
+plt.bar(labels,sizes,color='blue',label='Activities v/s time')
+plt.xlabel('Activities')
+plt.ylabel('Minutes recorded')
+plt.title('Activities v/s time')
 plt.show()
 
 def onActivityDetected(activity):
@@ -494,6 +512,7 @@ try:
     receive_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     receive_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     #print(socket.gethostname())
+    # receive_socket.bind((socket.gethostname(), 9800))
     receive_socket.bind((socket.gethostbyname(socket.gethostname()), 9800))
 
     receive_socket.listen(4) # become a server socket, maximum 5 connections
